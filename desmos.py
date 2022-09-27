@@ -1,5 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/python
 import time
+import math
+
 inull = 1
 igoto = 2
 iifeq = 3
@@ -56,9 +58,15 @@ def read(index, pos):
 	if pos == 'y':
 		return D[int(index*2-1)]
 
+def jump(pos):
+	change(1, pos, 2)
 
 def tick():
+	rega = 2
+	regb = 3
+	stack = 4
 	cond = 14
+
 	global ast
 	if ast == 0:
 		ins = read(D[0], 'x')
@@ -72,7 +80,7 @@ def tick():
 		next()
 	if ins == igoto:
 		if cnt >= 2:
-			change(1,dat,2)
+			jump(dat)
 		else:
 			next()
 	if ins == iifeq:
@@ -85,7 +93,7 @@ def tick():
 			if read(cond, 'y') == 1:
 				next()
 			else:
-				change(1, dat, 2)
+				jump(dat)
 		if cnt < 2:
 			next()
 	if ins == iifgt:
@@ -98,7 +106,7 @@ def tick():
 			if read(cond, 'y') == 1:
 				next()
 			else:
-				change(1, dat, 2)
+				jump(dat)
 		if cnt < 2:
 			next()
 	if ins == iiflt:
@@ -111,7 +119,7 @@ def tick():
 			if read(cond, 'y') == 1:
 				next()
 			else:
-				change(1, dat, 2)
+				jump(dat)
 		if cnt < 2:
 			next()
 	if ins == iifge:
@@ -124,7 +132,7 @@ def tick():
 			if read(cond, 'y') == 1:
 				next()
 			else:
-				change(1, dat, 2)
+				jump(dat)
 		if cnt < 2:
 			next()
 	if ins == iifle:
@@ -137,21 +145,145 @@ def tick():
 			if read(cond, 'y') == 1:
 				next()
 			else:
-				change(1, dat, 2)
+				jump(dat)
 		if cnt < 2:
 			next()
 
 	if ins == icall:
 		if cnt == 2:
-			change(4, dpoi, read(4,'y')+1)
+			change(stack, dpoi, read(stack,'y')+1)
 		if cnt == 3:
-			change(read(4,'y'), dpoi, D[0]+1)
+			change(read(stack,'y'), dpoi, D[0]+1)
 		if cnt == 4:
-			change(1, read(D[0],'y'), 2)
+			change(1, dat, 2)
+		if cnt > 4 or cnt < 2:
+			next()
+
+	if ins == iretn:
+		if cnt == 2:
+			change(stack, dpoi, read(stack, 'y')-1)
+		if cnt == 3:
+			jump(read(read(stack,'y'),'y'))
+		if cnt > 3 or cnt < 2:
+			next()
+
+	if ins == iseta:
+		if cnt == 2:
+			change(rega, dnum, dat)
+		else:
+			next()
+
+	if ins == imema:
+		if cnt == 2:
+			change(rega, dnum, read(dat, 'y'))
+		else:
+			next()
+	if ins == iamem:
+		if cnt == 2:
+			change(dat, dnum, read(rega, 'y'))
+		else:
+			next()
+
+	if ins == isetb:
+		if cnt == 2:
+			change(regb, dnum, dat)
+		else:
+			next()
+
+	if ins == imemb:
+		if cnt == 2:
+			change(regb, dnum, read(dat, 'y'))
+		else:
+			next()
+
+	if ins == ibmem:
+		if cnt == 2:
+			change(dat, dnum, read(regb, 'y'))
+		else:
+			next()
+
+	if ins == iadd:
+		if cnt == 2:
+			change(dat, dnum, read(rega, 'y') + read(regb, 'y'))
+		else:
+			next()
+
+	if ins == isub:
+		if cnt == 2:
+			change(dat, dnum, read(rega, 'y') - read(regb, 'y'))
+		else:
+			next()
+
+	if ins == imul:
+		if cnt == 2:
+			change(dat, dnum, read(rega, 'y') * read(regb, 'y'))
+		else:
+			next()
+
+	if ins == idiv:
+		if cnt == 2:
+			change(dat, dnum, read(rega, 'y') / read(regb, 'y'))
+		else:
+			next()
+
+	if ins == ipow:
+		if cnt == 2:
+			change(dat, dnum, pow(read(rega, 'y'), read(regb, 'y')))
+		else:
+			next()
+
+	if ins == imod:
+		if cnt == 2:
+			change(dat, dnum, divmod(read(rega, 'y'), read(regb, 'y')))
+		else:
+			next()
+
+	if ins == iabs:
+		if cnt == 2:
+			change(dat, dnum, abs(read(rega, 'y')))
+		else:
+			next()
+
+	if ins == isin:
+		if cnt == 2:
+			change(dat, dnum, math.sin(read(rega, 'y')))
+		else:
+			next()
+
+	if ins == icos:
+		if cnt == 2:
+			change(dat, dnum, math.cos(read(rega, 'y')))
+		else:
+			next()
+
+	if ins == itan:
+		if cnt == 2:
+			change(dat, dnum, math.tan(read(rega, 'y')))
+		else:
+			next()
+
+	if ins == iasin:
+		if cnt == 2:
+			change(dat, dnum, math.asin(read(rega, 'y')))
+		else:
+			next()
+
+	if ins == iacos:
+		if cnt == 2:
+			change(dat, dnum, math.acos(read(rega, 'y')))
+		else:
+			next()
+
+	if ins == iatan:
+		if cnt == 2:
+			change(dat, dnum, math.atan(read(rega, 'y')))
+		else:
+			next()
+
 	if ast == 0 and D[1] >= 2:
 		change(1, D[0], D[1]+1)
 	if ast == 0 and D[1] == 1:
-		change(1, D[0]+1, D[1])
+		jump(D[0]+1)
 
 	if D[0] <= 0 or D[1] < 1:
 		return -1
