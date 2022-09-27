@@ -35,7 +35,7 @@ ast = 0
 arch = [ 16,2, dnum,0, dnum,0, dpoi,5, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dnum,0 ]
 prgp = len(arch)/2+1
 print ( "prgp: "+str(prgp))
-prg = [igoto,prgp+1, igoto, prgp]
+prg = [igoto,prgp+1, inull,prgp, igoto,0]
 varp = len(arch)+len(prg)
 vars = [-1,69]
 D = arch
@@ -49,6 +49,7 @@ def change(pos, datax, datay):
 
 def next():
 	change(1, D[0]+1, 2)
+
 def read(index, pos):
 	if pos == 'x':
 		return D[int(index*2-2)]
@@ -57,6 +58,7 @@ def read(index, pos):
 
 
 def tick():
+	cond = 14
 	global ast
 	if ast == 0:
 		ins = read(D[0], 'x')
@@ -66,50 +68,77 @@ def tick():
 		ast = 0
 	cnt = D[1]
 	dat = read(D[0], 'y')
+	if ins == inull:
+		next()
 	if ins == igoto:
 		if cnt >= 2:
 			change(1,dat,2)
 		else:
 			next()
 	if ins == iifeq:
-		if cnt >= 2:
+		if cnt == 2:
 			if D[3] == D[5]:
-				change(14, dnum, 1)
+				change(cond, dnum, 1)
 			else:
-				change(14, dnum, 0)
-		else:
+				change(cond, dnum, 0)
+		if cnt > 2:
+			if read(cond, 'y') == 1:
+				next()
+			else:
+				change(1, dat, 2)
+		if cnt < 2:
 			next()
 	if ins == iifgt:
-		if cnt >= 2:
+		if cnt == 2:
 			if D[3] > D[5]:
 				change(14, dnum, 1)
 			else:
 				change(14, dnum, 0)
-		else:
+		if cnt > 2:
+			if read(cond, 'y') == 1:
+				next()
+			else:
+				change(1, dat, 2)
+		if cnt < 2:
 			next()
 	if ins == iiflt:
-		if cnt >= 2:
+		if cnt == 2:
 			if D[3] < D[5]:
 				change(14, dnum, 1)
 			else:
 				change(14, dnum, 0)
-		else:
+		if cnt > 2:
+			if read(cond, 'y') == 1:
+				next()
+			else:
+				change(1, dat, 2)
+		if cnt < 2:
 			next()
 	if ins == iifge:
-		if cnt >= 2:
+		if cnt == 2:
 			if D[3] >= D[5]:
 				change(14, dnum, 1)
 			else:
 				change(14, dnum, 0)
-		else:
+		if cnt > 2:
+			if read(cond, 'y') == 1:
+				next()
+			else:
+				change(1, dat, 2)
+		if cnt < 2:
 			next()
 	if ins == iifle:
-		if cnt >= 2:
+		if cnt == 2:
 			if D[3] <= D[5]:
 				change(14, dnum, 1)
 			else:
 				change(14, dnum, 0)
-		else:
+		if cnt > 2:
+			if read(cond, 'y') == 1:
+				next()
+			else:
+				change(1, dat, 2)
+		if cnt < 2:
 			next()
 
 	if ins == icall:
@@ -124,14 +153,15 @@ def tick():
 	if ast == 0 and D[1] == 1:
 		change(1, D[0]+1, D[1])
 
-	if D[1] <= 0:
+	if D[0] <= 0 or D[1] < 1:
 		return -1
 	return 0
 
 
 
-
-while (tick() >= 0):
-	print (str(D[0])+", "+str(D[1])+", "+str(ast), end='\r')
+b = 0
+while (b >= 0):
+	b = tick()
+	print (str(D[0]-prgp)+", "+str(D[1])+"       ", end='\r')
 	time.sleep(0.5)
 print ()
