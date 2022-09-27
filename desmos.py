@@ -1,4 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/python
+import time
 inull = 1
 igoto = 2
 iifeq = 3
@@ -30,11 +31,11 @@ iatan = 28
 
 dnum = -1
 dpoi = -2
-
+ast = 0
 arch = [ 16,2, dnum,0, dnum,0, dpoi,5, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dnum,0 ]
 prgp = len(arch)/2+1
 print ( "prgp: "+str(prgp))
-prg = [igoto,prgp]
+prg = [igoto,prgp+1, igoto, prgp]
 varp = len(arch)+len(prg)
 vars = [-1,69]
 D = arch
@@ -48,11 +49,23 @@ def change(pos, datax, datay):
 
 def next():
 	change(1, D[0]+1, 2)
+def read(index, pos):
+	if pos == 'x':
+		return D[int(index*2-2)]
+	if pos == 'y':
+		return D[int(index*2-1)]
+
 
 def tick():
-	ins = D[int(D[0]*2-2)]
+	global ast
+	if ast == 0:
+		ins = read(D[0], 'x')
+		ast = 1
+	else:
+		ins = inull
+		ast = 0
 	cnt = D[1]
-	dat = D[int(D[0]*2-1)]
+	dat = read(D[0], 'y')
 	if ins == igoto:
 		if cnt >= 2:
 			change(1,dat,2)
@@ -99,10 +112,18 @@ def tick():
 		else:
 			next()
 
-	if D[1] >= 2:
+	if ins == icall:
+		if cnt == 2:
+			change(4, dpoi, read(4,'y')+1)
+		if cnt == 3:
+			change(read(4,'y'), dpoi, D[0]+1)
+		if cnt == 4:
+			change(1, read(D[0],'y'), 2)
+	if ast == 0 and D[1] >= 2:
 		change(1, D[0], D[1]+1)
-	if D[1] == 1:
+	if ast == 0 and D[1] == 1:
 		change(1, D[0]+1, D[1])
+
 	if D[1] <= 0:
 		return -1
 	return 0
@@ -111,5 +132,6 @@ def tick():
 
 
 while (tick() >= 0):
-	print (str(D[0])+", "+str(D[1]), end='\r')
+	print (str(D[0])+", "+str(D[1])+", "+str(ast), end='\r')
+	time.sleep(0.5)
 print ()
