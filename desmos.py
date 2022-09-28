@@ -31,51 +31,57 @@ iasin = 26
 iacos = 27
 iatan = 28
 
+rega = 2
+regb = 3
+stack = 4
+cond = 13
+
 dnum = -1
 dpoi = -2
-ast = 0
-arch = [ 16,2, dnum,0, dnum,0, dpoi,5, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dnum,0 ]
-prgp = len(arch)/2+1
+
+arch = [ 16,2, dnum,0, dnum,0, dpoi,5, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dnum,-2 ]
+prgp = int(len(arch)/2)
 print ( "prgp: "+str(prgp))
-prg = [igoto,prgp+1, inull,prgp, igoto,0]
+prg = [ iseta,6, isetb,1, isub,rega, iifeq,prgp+3, igoto, 0]
 varp = len(arch)+len(prg)
 vars = [-1,69]
 D = arch
 D.extend(prg)
 D.extend(vars)
-D[0] = prgp
+D[0] = prgp+1
 
 def change(pos, datax, datay):
+	global D
 	D[2*pos-2] = datax
 	D[2*pos-1] = datay
 
 def next():
+	global D
 	change(1, D[0]+1, 2)
 
 def read(index, pos):
+	global D
 	if pos == 'x':
 		return D[int(index*2-2)]
 	if pos == 'y':
 		return D[int(index*2-1)]
 
 def jump(pos):
+	global D
 	change(1, pos, 2)
 
 def tick():
-	rega = 2
-	regb = 3
-	stack = 4
-	cond = 14
-
-	global ast
-	if ast == 0:
-		ins = read(D[0], 'x')
-		ast = 1
-	else:
-		ins = inull
-		ast = 0
+	global D
+	ins = read(D[0], 'x')
 	cnt = D[1]
 	dat = read(D[0], 'y')
+
+	if D[1] >= 2:
+		change(1, D[0], D[1]+1)
+	if D[1] == 1:
+		jump(D[0]+1)
+
+
 	if ins == inull:
 		next()
 	if ins == igoto:
@@ -85,7 +91,7 @@ def tick():
 			next()
 	if ins == iifeq:
 		if cnt == 2:
-			if D[3] == D[5]:
+			if read(rega, 'y') == read(regb, 'y'):
 				change(cond, dnum, 1)
 			else:
 				change(cond, dnum, 0)
@@ -98,7 +104,7 @@ def tick():
 			next()
 	if ins == iifgt:
 		if cnt == 2:
-			if D[3] > D[5]:
+			if read(rega, 'y') > read(regb, 'y'):
 				change(14, dnum, 1)
 			else:
 				change(14, dnum, 0)
@@ -111,7 +117,7 @@ def tick():
 			next()
 	if ins == iiflt:
 		if cnt == 2:
-			if D[3] < D[5]:
+			if read(rega, 'y') < read(regb, 'y'):
 				change(14, dnum, 1)
 			else:
 				change(14, dnum, 0)
@@ -124,7 +130,7 @@ def tick():
 			next()
 	if ins == iifge:
 		if cnt == 2:
-			if D[3] >= D[5]:
+			if read(rega, 'y') >= read(regb, 'y'):
 				change(14, dnum, 1)
 			else:
 				change(14, dnum, 0)
@@ -137,7 +143,7 @@ def tick():
 			next()
 	if ins == iifle:
 		if cnt == 2:
-			if D[3] <= D[5]:
+			if read(rega, 'y') <= read(regb, 'y'):
 				change(14, dnum, 1)
 			else:
 				change(14, dnum, 0)
@@ -280,11 +286,6 @@ def tick():
 		else:
 			next()
 
-	if ast == 0 and D[1] >= 2:
-		change(1, D[0], D[1]+1)
-	if ast == 0 and D[1] == 1:
-		jump(D[0]+1)
-
 	if D[0] <= 0 or D[1] < 1:
 		return -1
 	return 0
@@ -294,6 +295,6 @@ def tick():
 b = 0
 while (b >= 0):
 	b = tick()
-	print (str(D[0]-prgp)+", "+str(D[1])+"       ", end='\r')
-	time.sleep(0.5)
+	print (str(D[0]-prgp)+", "+str(D[1])+", rega: "+str(read(rega,'y'))+", cond: "+str(read(cond,'y'))+"       ", end='\r')
+	time.sleep(1)
 print ()
