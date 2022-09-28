@@ -42,7 +42,12 @@ dpoi = -2
 arch = [ 16,2, dnum,0, dnum,0, dpoi,5, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dpoi,0, dnum,-2 ]
 prgp = int(len(arch)/2)
 print ( "prgp: "+str(prgp))
-prg = [ iseta,6, isetb,1, isub,rega, iifeq,prgp+3, igoto, 0]
+prg = [
+iseta,-5,
+isetb,1,
+iadd,rega,
+iifge,prgp+3,
+igoto,0 ]
 varp = len(arch)+len(prg)
 vars = [-1,69]
 D = arch
@@ -105,9 +110,9 @@ def tick():
 	if ins == iifgt:
 		if cnt == 2:
 			if read(rega, 'y') > read(regb, 'y'):
-				change(14, dnum, 1)
+				change(cond, dnum, 1)
 			else:
-				change(14, dnum, 0)
+				change(cond, dnum, 0)
 		if cnt > 2:
 			if read(cond, 'y') == 1:
 				next()
@@ -118,9 +123,9 @@ def tick():
 	if ins == iiflt:
 		if cnt == 2:
 			if read(rega, 'y') < read(regb, 'y'):
-				change(14, dnum, 1)
+				change(cond, dnum, 1)
 			else:
-				change(14, dnum, 0)
+				change(cond, dnum, 0)
 		if cnt > 2:
 			if read(cond, 'y') == 1:
 				next()
@@ -131,9 +136,9 @@ def tick():
 	if ins == iifge:
 		if cnt == 2:
 			if read(rega, 'y') >= read(regb, 'y'):
-				change(14, dnum, 1)
+				change(cond, dnum, 1)
 			else:
-				change(14, dnum, 0)
+				change(cond, dnum, 0)
 		if cnt > 2:
 			if read(cond, 'y') == 1:
 				next()
@@ -144,9 +149,9 @@ def tick():
 	if ins == iifle:
 		if cnt == 2:
 			if read(rega, 'y') <= read(regb, 'y'):
-				change(14, dnum, 1)
+				change(cond, dnum, 1)
 			else:
-				change(14, dnum, 0)
+				change(cond, dnum, 0)
 		if cnt > 2:
 			if read(cond, 'y') == 1:
 				next()
@@ -296,5 +301,5 @@ b = 0
 while (b >= 0):
 	b = tick()
 	print (str(D[0]-prgp)+", "+str(D[1])+", rega: "+str(read(rega,'y'))+", cond: "+str(read(cond,'y'))+"       ", end='\r')
-	time.sleep(1)
+	time.sleep(1/5)
 print ()
